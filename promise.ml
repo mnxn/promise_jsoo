@@ -34,21 +34,21 @@ let all (promises : 'a t array) : 'a array t =
   promise_constr##all (Js_of_ocaml.Js.array promises)
   |> then_ ~fulfilled:(fun value -> resolve (Js_of_ocaml.Js.to_array value))
 
-let all_list (promises : 'a t list) : 'a list t =
-  all (Array.of_list promises)
-  |> then_ ~fulfilled:(fun value -> resolve (Array.to_list value))
-
 let all2 ((p1 : 'a t), (p2 : 'b t)) : ('a * 'b) t =
   promise_constr##all (Js_of_ocaml.Js.array [| p1; p2 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js_of_ocaml.Js.to_array value in
          resolve (arr.(0), arr.(1)))
 
-let all3 ((p1 : 'a t), (p2 : 'b t), (p3 : 'b t)) : ('a * 'b * 'c) t =
+let all3 ((p1 : 'a t), (p2 : 'b t), (p3 : 'c t)) : ('a * 'b * 'c) t =
   promise_constr##all (Js_of_ocaml.Js.array [| p1; p2; p3 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js_of_ocaml.Js.to_array value in
          resolve (arr.(0), arr.(1), arr.(2)))
+
+let all_list (promises : 'a t list) : 'a list t =
+  all (Array.of_list promises)
+  |> then_ ~fulfilled:(fun value -> resolve (Array.to_list value))
 
 let race (promises : 'a t array) : 'a t =
   promise_constr##race (Js_of_ocaml.Js.array promises)

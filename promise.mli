@@ -38,14 +38,14 @@ val all : 'a t array -> 'a array t
 	If it rejects, it is rejected with the reason from the first promise in the iterable that was
 	rejected. *)
 
-val all_list : 'a t list -> 'a list t
-(** Specialization of {!all} for a list of promises *)
-
 val all2 : 'a t * 'b t -> ('a * 'b) t
 (** Specialization of {!all} for a tuple of 2 promises *)
 
 val all3 : 'a t * 'b t * 'c t -> ('a * 'b * 'c) t
 (** Specialization of {!all} for a tuple of 3 promises *)
+
+val all_list : 'a t list -> 'a list t
+(** Specialization of {!all} for a list of promises *)
 
 val race : 'a t array -> 'a t
 (** Wait until any of the promises is resolved or rejected.
