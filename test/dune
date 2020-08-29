@@ -1,0 +1,10 @@
+(executable
+ (name test_promise)
+ (libraries promise_jsoo webtest webtest-js)
+ (modes js))
+
+(rule
+ (alias runtest)
+ (deps test_promise.bc.js)
+ (action
+  (run node --unhandled-rejections=strict test_promise.bc.js)))
