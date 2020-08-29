@@ -31,19 +31,19 @@ let finally ~(f : unit -> unit) (promise : 'a t) : 'a t =
   (Js.Unsafe.coerce promise)##finally (Js.wrap_callback f)
 
 let all (promises : 'a t array) : 'a array t =
-  promise_constr##all (Js_of_ocaml.Js.array promises)
-  |> then_ ~fulfilled:(fun value -> resolve (Js_of_ocaml.Js.to_array value))
+  promise_constr##all (Js.array promises)
+  |> then_ ~fulfilled:(fun value -> resolve (Js.to_array value))
 
 let all2 ((p1 : 'a t), (p2 : 'b t)) : ('a * 'b) t =
-  promise_constr##all (Js_of_ocaml.Js.array [| p1; p2 |])
+  promise_constr##all (Js.array [| p1; p2 |])
   |> then_ ~fulfilled:(fun value ->
-         let arr = Js_of_ocaml.Js.to_array value in
+         let arr = Js.to_array value in
          resolve (arr.(0), arr.(1)))
 
 let all3 ((p1 : 'a t), (p2 : 'b t), (p3 : 'c t)) : ('a * 'b * 'c) t =
-  promise_constr##all (Js_of_ocaml.Js.array [| p1; p2; p3 |])
+  promise_constr##all (Js.array [| p1; p2; p3 |])
   |> then_ ~fulfilled:(fun value ->
-         let arr = Js_of_ocaml.Js.to_array value in
+         let arr = Js.to_array value in
          resolve (arr.(0), arr.(1), arr.(2)))
 
 let all_list (promises : 'a t list) : 'a list t =
@@ -51,7 +51,7 @@ let all_list (promises : 'a t list) : 'a list t =
   |> then_ ~fulfilled:(fun value -> resolve (Array.to_list value))
 
 let race (promises : 'a t array) : 'a t =
-  promise_constr##race (Js_of_ocaml.Js.array promises)
+  promise_constr##race (Js.array promises)
 
 let race_list (promises : 'a t list) : 'a t = race (Array.of_list promises)
 
