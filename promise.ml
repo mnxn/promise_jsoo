@@ -1,6 +1,6 @@
 open Js_of_ocaml
 
-type 'a t = Js.Unsafe.any
+type +'a t = Js.Unsafe.any
 
 type error
 

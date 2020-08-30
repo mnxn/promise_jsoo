@@ -565,12 +565,51 @@ module Supplemental = struct
          ]
 end
 
+module Variance = struct
+  type poly_variant =
+    [ `A
+    | `B
+    ]
+
+  type poly_variant_subtype = [ `A ]
+
+  let test_variance_poly_variant finish =
+    let promise_subtype : poly_variant_subtype Promise.t = Promise.return `A in
+    let (_ : poly_variant Promise.t) =
+      (promise_subtype :> poly_variant Promise.t)
+    in
+    pass finish ()
+
+  type obj = < a : int >
+
+  type obj_subtype = < a : int ; b : int >
+
+  let test_variance_obj finish =
+    let promise_subtype : obj_subtype Promise.t =
+      Promise.return
+        (object
+           method a = 1
+
+           method b = 2
+        end)
+    in
+    let (_ : obj Promise.t) = (promise_subtype :> obj Promise.t) in
+    pass finish ()
+
+  let suite =
+    "Variance"
+    >::: [ "test_variance_poly_variant" >:~ test_variance_poly_variant
+         ; "test_variance_obj" >:~ test_variance_obj
+         ]
+end
+
 let suite =
   "Promise"
   >::: [ CoreFunctions.suite
        ; InstanceMethods.suite
        ; StaticMethods.suite
        ; Supplemental.suite
+       ; Variance.suite
        ]
 
 let () = Webtest_js.Runner.run suite
