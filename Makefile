@@ -8,6 +8,7 @@ watch:
 
 clean:
 	dune clean
+	rm -rf ./docs
 .PHONY: clean
 
 test:
@@ -16,5 +17,6 @@ test:
 
 doc:
 	dune build @doc
-	cp -r _build/default/_doc/_html docs
+	rm -rf ./docs
+	cp -R ./_build/default/_doc/_html ./docs
 .PHONY: doc
