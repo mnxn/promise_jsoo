@@ -6,25 +6,35 @@ type error
 
 let promise_constr = Js.Unsafe.global##._Promise
 
+let indirect_promise_constr = Js.Unsafe.global##._IndirectPromise
+
+let wrap (value : 'a) : 'a = indirect_promise_constr##wrap value
+
+let unwrap (value : 'a) : 'a = indirect_promise_constr##unwrap value
+
 let make (f : resolve:('a -> unit) -> reject:('e -> unit) -> unit) : 'a t =
-  let f resolve reject = f ~resolve ~reject in
-  new%js promise_constr (Js.wrap_callback f)
+  let f_safe resolve reject =
+    let resolve_safe value = resolve (wrap value) in
+    f ~resolve:resolve_safe ~reject
+  in
+  new%js promise_constr (Js.wrap_callback f_safe)
+
+let resolve (value : 'a) : 'a t = promise_constr##resolve (wrap value)
 
 let reject (reason : 'e) : 'a t = promise_constr##reject reason
-
-let resolve (value : 'a) : 'a t = promise_constr##resolve value
 
 let catch ~(rejected : error -> 'a t) (promise : 'a t) : 'a t =
   (Js.Unsafe.coerce promise)##catch (Js.wrap_callback rejected)
 
 let then_ ~(fulfilled : 'a -> 'b t) ?(rejected : (error -> 'b t) option)
     (promise : 'a t) : 'b t =
+  let fulfilled_safe value = fulfilled (unwrap value) in
   match rejected with
   | None          ->
-    (Js.Unsafe.coerce promise)##then_ (Js.wrap_callback fulfilled)
+    (Js.Unsafe.coerce promise)##then_ (Js.wrap_callback fulfilled_safe)
   | Some rejected ->
     (Js.Unsafe.coerce promise)##then_
-      (Js.wrap_callback fulfilled)
+      (Js.wrap_callback fulfilled_safe)
       (Js.wrap_callback rejected)
 
 let finally ~(f : unit -> unit) (promise : 'a t) : 'a t =

@@ -603,6 +603,24 @@ module Variance = struct
          ]
 end
 
+module Soundness = struct
+  let test_resolve_soundness finish =
+    let nested_promise = Promise.resolve (Promise.resolve 1) in
+    let fulfilled value =
+      let fulfilled value =
+        finish (fun () -> assert_equal value 1);
+        Promise.resolve ()
+      in
+      let (_ : unit Promise.t) = value |> Promise.then_ ~fulfilled in
+      Promise.resolve ()
+    in
+    let (_ : unit Promise.t) = nested_promise |> Promise.then_ ~fulfilled in
+    timeout (fail finish)
+
+  let suite =
+    "Soundness" >::: [ "test_resolve_soundness" >:~ test_resolve_soundness ]
+end
+
 let suite =
   "Promise"
   >::: [ CoreFunctions.suite
@@ -610,6 +628,7 @@ let suite =
        ; StaticMethods.suite
        ; Supplemental.suite
        ; Variance.suite
+       ; Soundness.suite
        ]
 
 let () = Webtest_js.Runner.run suite
