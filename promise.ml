@@ -42,19 +42,20 @@ let finally ~(f : unit -> unit) (promise : 'a t) : 'a t =
 
 let all (promises : 'a t array) : 'a array t =
   promise_constr##all (Js.array promises)
-  |> then_ ~fulfilled:(fun value -> resolve (Js.to_array value))
+  |> then_ ~fulfilled:(fun value ->
+         resolve (Array.map unwrap (Js.to_array value)))
 
 let all2 ((p1 : 'a t), (p2 : 'b t)) : ('a * 'b) t =
   promise_constr##all (Js.array [| p1; p2 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js.to_array value in
-         resolve (arr.(0), arr.(1)))
+         resolve (unwrap arr.(0), unwrap arr.(1)))
 
 let all3 ((p1 : 'a t), (p2 : 'b t), (p3 : 'c t)) : ('a * 'b * 'c) t =
   promise_constr##all (Js.array [| p1; p2; p3 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js.to_array value in
-         resolve (arr.(0), arr.(1), arr.(2)))
+         resolve (unwrap arr.(0), unwrap arr.(1), unwrap arr.(2)))
 
 let all_list (promises : 'a t list) : 'a list t =
   all (Array.of_list promises)
