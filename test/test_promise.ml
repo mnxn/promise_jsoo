@@ -604,6 +604,22 @@ module Variance = struct
 end
 
 module Soundness = struct
+  let test_make_soundness finish =
+    let nested_promise =
+      Promise.make (fun ~resolve ~reject:_ ->
+          resolve (Promise.make (fun ~resolve ~reject:_ -> resolve 1)))
+    in
+    let fulfilled value =
+      let fulfilled value =
+        finish (fun () -> assert_equal value 1);
+        Promise.resolve ()
+      in
+      let (_ : unit Promise.t) = value |> Promise.then_ ~fulfilled in
+      Promise.resolve ()
+    in
+    let (_ : unit Promise.t) = nested_promise |> Promise.then_ ~fulfilled in
+    timeout (fail finish)
+
   let test_resolve_soundness finish =
     let nested_promise = Promise.resolve (Promise.resolve 1) in
     let fulfilled value =
@@ -617,8 +633,86 @@ module Soundness = struct
     let (_ : unit Promise.t) = nested_promise |> Promise.then_ ~fulfilled in
     timeout (fail finish)
 
+  let test_all_soundness finish =
+    let promises =
+      [| Promise.resolve (Promise.resolve 1)
+       ; Promise.resolve (Promise.resolve 2)
+      |]
+    in
+    let fulfilled value =
+      let fulfilled value =
+        finish (fun () -> assert_equal value [| 1; 2 |]);
+        Promise.resolve ()
+      in
+      let result = Promise.all value in
+      let (_ : unit Promise.t) = result |> Promise.then_ ~fulfilled in
+      Promise.resolve ()
+    in
+    let result = Promise.all promises in
+    let (_ : unit Promise.t) = result |> Promise.then_ ~fulfilled in
+    timeout (fail finish)
+
+  let test_all2_soundness finish =
+    let promises =
+      (Promise.resolve (Promise.resolve 1), Promise.resolve (Promise.resolve 2))
+    in
+    let fulfilled value =
+      let fulfilled value =
+        finish (fun () -> assert_equal value (1, 2));
+        Promise.resolve ()
+      in
+      let result = Promise.all2 value in
+      let (_ : unit Promise.t) = result |> Promise.then_ ~fulfilled in
+      Promise.resolve ()
+    in
+    let result = Promise.all2 promises in
+    let (_ : unit Promise.t) = result |> Promise.then_ ~fulfilled in
+    timeout (fail finish)
+
+  let test_all3_soundness finish =
+    let promises =
+      ( Promise.resolve (Promise.resolve 1)
+      , Promise.resolve (Promise.resolve 2)
+      , Promise.resolve (Promise.resolve 3) )
+    in
+    let fulfilled value =
+      let fulfilled value =
+        finish (fun () -> assert_equal value (1, 2, 3));
+        Promise.resolve ()
+      in
+      let result = Promise.all3 value in
+      let (_ : unit Promise.t) = result |> Promise.then_ ~fulfilled in
+      Promise.resolve ()
+    in
+    let result = Promise.all3 promises in
+    let (_ : unit Promise.t) = result |> Promise.then_ ~fulfilled in
+    timeout (fail finish)
+
+  let test_race_soundness finish =
+    let promises =
+      [| Promise.resolve (Promise.resolve 5); timeout_promise finish |]
+    in
+    let fulfilled value =
+      let fulfilled value =
+        finish (fun () -> assert_equal value 5);
+        Promise.resolve ()
+      in
+      let (_ : unit Promise.t) = value |> Promise.then_ ~fulfilled in
+      Promise.resolve ()
+    in
+    let result = Promise.race promises in
+    let (_ : unit Promise.t) = result |> Promise.then_ ~fulfilled in
+    timeout (fail finish)
+
   let suite =
-    "Soundness" >::: [ "test_resolve_soundness" >:~ test_resolve_soundness ]
+    "Soundness"
+    >::: [ "test_make_soundness" >:~ test_make_soundness
+         ; "test_resolve_soundness" >:~ test_resolve_soundness
+         ; "test_all_soundness" >:~ test_all_soundness
+         ; "test_all2_soundness" >:~ test_all2_soundness
+         ; "test_all3_soundness" >:~ test_all3_soundness
+         ; "test_race_soundness" >:~ test_race_soundness
+         ]
 end
 
 let suite =
