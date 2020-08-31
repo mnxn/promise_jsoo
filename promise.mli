@@ -120,8 +120,10 @@ end
 
 module Result : sig
   val from_catch : 'a t -> ('a, error) result t
+  (** [from_catch p] catches any rejections on the promise [p] and resolves it to [Error reason],
+      or [Ok value] when the promise is fulfilled *)
 
-  val return : 'a -> ('a, 'b) result t
+  val return : 'a -> ('a, 'e) result t
 
   val map : ('a -> 'b) -> ('a, 'e) result t -> ('b, 'e) result t
 
@@ -149,14 +151,22 @@ end
 
 module Array : sig
   val find_map : ('a -> 'b option t) -> 'a array -> 'b option t
+  (** [find_map f a] applies [f] to the elements of [a] in order,
+      and resolves the first result of the form [Some v], or [None] if none exist. *)
 
   val filter_map : ('a -> 'b option t) -> 'a array -> 'b array t
+  (** [filter_map f a] applies [f] to every element of [a],
+      filters out the [None] elements and resolves the list of the arguments of the [Some] elements. *)
 end
 
 module List : sig
   val find_map : ('a -> 'b option t) -> 'a list -> 'b option t
+  (** [find_map f l] applies [f] to the elements of [l] in order,
+      and resolves the first result of the form [Some v], or [None] if none exist. *)
 
   val filter_map : ('a -> 'b option t) -> 'a list -> 'b list t
+  (** [filter_map f l] applies [f] to every element of [l],
+      filters out the [None] elements and resolves the list of the arguments of the [Some] elements. *)
 end
 
 (** {1 Compatibility with gen_js_api} *)
