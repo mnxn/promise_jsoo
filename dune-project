@@ -20,6 +20,7 @@
  (synopsis "Js_of_ocaml bindings to JS Promises with supplemental functions")
  (depends
   js_of_ocaml
+  js_of_ocaml-ppx
   gen_js_api
   (webtest :with-test)
   (webtest-js :with-test)
