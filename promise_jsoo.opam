@@ -10,6 +10,8 @@ depends: [
   "dune" {>= "2.7"}
   "js_of_ocaml"
   "gen_js_api"
+  "webtest" {with-test}
+  "webtest-js" {with-test}
   "odoc" {with-doc}
 ]
 build: [

@@ -1,6 +1,6 @@
 (executable
  (name test_promise)
- (libraries promise_jsoo webtest webtest-js)
+ (libraries promise_jsoo js_of_ocaml webtest webtest-js)
  (modes js))
 
 (rule

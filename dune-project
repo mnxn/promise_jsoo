@@ -13,7 +13,13 @@
 
 (generate_opam_files true)
 
+(implicit_transitive_deps false)
+
 (package
  (name promise_jsoo)
  (synopsis "Js_of_ocaml bindings to JS Promises with supplemental functions")
- (depends js_of_ocaml gen_js_api))
+ (depends
+  js_of_ocaml
+  gen_js_api
+  (webtest :with-test)
+  (webtest-js :with-test)))
