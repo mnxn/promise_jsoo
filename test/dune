@@ -1,6 +1,8 @@
 (executable
  (name test_promise)
  (libraries promise_jsoo js_of_ocaml webtest webtest-js)
+ (preprocess
+  (pps js_of_ocaml-ppx))
  (modes js))
 
 (rule

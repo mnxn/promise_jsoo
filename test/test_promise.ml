@@ -1,3 +1,4 @@
+open Js_of_ocaml
 open Webtest.Suite
 
 let pass finish () = finish Async.noop
@@ -5,9 +6,7 @@ let pass finish () = finish Async.noop
 let fail finish () = finish (fun () -> assert_true false)
 
 let timeout f =
-  let (_ : Js_of_ocaml.Dom_html.timeout_id_safe) =
-    Js_of_ocaml.Dom_html.setTimeout f 1000.
-  in
+  let (_ : Dom_html.timeout_id_safe) = Dom_html.setTimeout f 1000. in
   ()
 
 let timeout_promise finish =
@@ -16,18 +15,18 @@ let timeout_promise finish =
 module CoreFunctions = struct
   let test_make () =
     let promise = Promise.make (fun ~resolve:_ ~reject:_ -> ()) in
-    assert_true Js_of_ocaml.Js.Optdef.(test (return promise));
-    assert_true Js_of_ocaml.Js.Opt.(test (return promise))
+    assert_true Js.Optdef.(test (return promise));
+    assert_true Js.Opt.(test (return promise))
 
   let test_resolve () =
     let promise = Promise.resolve () in
-    assert_true Js_of_ocaml.Js.Optdef.(test (return promise));
-    assert_true Js_of_ocaml.Js.Opt.(test (return promise))
+    assert_true Js.Optdef.(test (return promise));
+    assert_true Js.Opt.(test (return promise))
 
   let test_reject () =
     let promise = Promise.resolve () in
-    assert_true Js_of_ocaml.Js.Optdef.(test (return promise));
-    assert_true Js_of_ocaml.Js.Opt.(test (return promise))
+    assert_true Js.Optdef.(test (return promise));
+    assert_true Js.Opt.(test (return promise))
 
   let suite =
     "CoreFunctions"
@@ -100,16 +99,24 @@ module InstanceMethods = struct
     let (_ : unit Promise.t) = Promise.catch promise ~rejected in
     timeout (fail finish)
 
+  let finally_tests =
+    let finally_method = Js.Unsafe.global##._Promise##.prototype##.finally in
+    if Js.Optdef.test finally_method then
+      [ "test_finally_resolved" >:~ test_finally_resolved
+      ; "test_finally_rejected" >:~ test_finally_rejected
+      ]
+    else
+      []
+
   let suite =
     "InstanceMethods"
     >::: [ "test_then_fulfilled" >:~ test_then_fulfilled
          ; "test_then_rejected" >:~ test_then_rejected
          ; "test_catch" >:~ test_catch
-         ; "test_finally_resolved" >:~ test_finally_resolved
-         ; "test_finally_rejected" >:~ test_finally_rejected
          ; "test_make_resolve" >:~ test_make_resolve
          ; "test_make_reject" >:~ test_make_reject
          ]
+         @ finally_tests
 end
 
 module StaticMethods = struct
