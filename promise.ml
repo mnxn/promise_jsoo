@@ -186,6 +186,6 @@ let t_of_js (_ : Ojs.t -> 'a) : Ojs.t -> 'a t = Obj.magic
 
 type void = unit t
 
-let void_to_js : 'a t -> Ojs.t = Obj.magic
+let void_to_js : void -> Ojs.t = Obj.magic
 
-let void_of_js : Ojs.t -> 'a t = Obj.magic
+let void_of_js : Ojs.t -> void = Obj.magic

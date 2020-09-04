@@ -177,6 +177,6 @@ val t_of_js : (Ojs.t -> 'a) -> Ojs.t -> 'a t
 
 type void = unit t
 
-val void_to_js : 'a t -> Ojs.t
+val void_to_js : void -> Ojs.t
 
-val void_of_js : Ojs.t -> 'a t
+val void_of_js : Ojs.t -> void
