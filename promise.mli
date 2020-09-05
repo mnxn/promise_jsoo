@@ -1,4 +1,4 @@
-type +'a t
+type +'a t = private < > Js_of_ocaml.Js.t
 (** The Promise object represents the eventual completion (or failure) of an asynchronous
 	operation, and its resulting value. *)
 
