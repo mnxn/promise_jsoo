@@ -19,6 +19,8 @@
  (name promise_jsoo)
  (synopsis "Js_of_ocaml bindings to JS Promises with supplemental functions")
  (depends
+  (ocaml
+   (>= 4.08))
   js_of_ocaml
   js_of_ocaml-ppx
   gen_js_api
