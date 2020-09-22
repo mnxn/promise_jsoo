@@ -4,9 +4,9 @@
 
 (license MIT)
 
-(maintainers "Max Lantas <mnxn.dev@outlook.com>")
+(maintainers "Max Lantas <mnxndev@outlook.com>")
 
-(authors "Max Lantas <mnxn.dev@outlook.com>")
+(authors "Max Lantas <mnxndev@outlook.com>")
 
 (source
  (github mnxn/promise_jsoo))
