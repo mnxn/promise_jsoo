@@ -2,7 +2,7 @@ open Js_of_ocaml
 
 type +'a t = < > Js.t
 
-type error
+type error = private Js_of_ocaml.Js.Unsafe.any
 
 let promise_constr = Js.Unsafe.global##._Promise
 
@@ -189,3 +189,7 @@ type void = unit t
 let void_to_js : void -> Ojs.t = Obj.magic
 
 let void_of_js : Ojs.t -> void = Obj.magic
+
+let error_to_js : error -> Ojs.t = Obj.magic
+
+let error_of_js : Ojs.t -> error = Obj.magic

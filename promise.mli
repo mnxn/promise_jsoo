@@ -2,8 +2,8 @@ type +'a t = private < > Js_of_ocaml.Js.t
 (** The Promise object represents the eventual completion (or failure) of an asynchronous
 	operation, and its resulting value. *)
 
-type error
-(** Abstract type for errors returned by [reject] *)
+type error = private Js_of_ocaml.Js.Unsafe.any
+(** Type for errors returned by [reject] *)
 
 val make : (resolve:('a -> unit) -> reject:('e -> unit) -> unit) -> 'a t
 (** Creates a new Promise object. The constructor is primarily used to wrap functions that do
@@ -180,3 +180,7 @@ type void = unit t
 val void_to_js : void -> Ojs.t
 
 val void_of_js : Ojs.t -> void
+
+val error_to_js : error -> Ojs.t
+
+val error_of_js : Ojs.t -> error
