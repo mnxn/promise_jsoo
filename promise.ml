@@ -2,7 +2,7 @@ open Js_of_ocaml
 
 type +'a t = < > Js.t
 
-type error = private Js_of_ocaml.Js.Unsafe.any
+type error = Js_of_ocaml.Js.Unsafe.any
 
 let promise_constr = Js.Unsafe.global##._Promise
 
@@ -180,15 +180,17 @@ module Result = struct
   end
 end
 
-let t_to_js (_ : 'a -> Ojs.t) : 'a t -> Ojs.t = Obj.magic
+let t_to_js (to_js : 'a -> Ojs.t) (promise : 'a t) : Ojs.t =
+  Obj.magic (map to_js promise)
 
-let t_of_js (_ : Ojs.t -> 'a) : Ojs.t -> 'a t = Obj.magic
+let t_of_js (of_js : Ojs.t -> 'a) (promise : Ojs.t) : 'a t =
+  map of_js (Obj.magic promise : Ojs.t t)
 
 type void = unit t
 
-let void_to_js : void -> Ojs.t = Obj.magic
+let void_to_js = t_to_js (fun () -> Ojs.variable "undefined")
 
-let void_of_js : Ojs.t -> void = Obj.magic
+let void_of_js = t_of_js (fun (_ : Ojs.t) -> ())
 
 let error_to_js : error -> Ojs.t = Obj.magic
 
