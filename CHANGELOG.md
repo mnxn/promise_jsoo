@@ -2,7 +2,10 @@
 
 ## Unreleased
 
--   Fix `{Array,List}.find_map`
+-   Fix `Promise.Array.find_map` and `Promise.List.find_map` raising
+    `Assert_failure` (#1)
+-   Stop calling the function once `Promise.Array.find_map` and
+    `Promise.List.find_map` find a value (#1)
 
 ## 0.2.0
 
