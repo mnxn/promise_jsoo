@@ -14,8 +14,8 @@ let wrap (value : 'a) : 'a = indirect_promise_constr##wrap value
 
 let unwrap (value : 'a) : 'b = indirect_promise_constr##unwrap value
 
-let make (type a) (f : resolve:(a -> unit) -> reject:('e -> unit) -> unit) : a t
-    =
+let make (type a e) (f : resolve:(a -> unit) -> reject:(e -> unit) -> unit) :
+    a t =
   let f_safe resolve reject =
     let resolve_safe value = resolve (wrap value) in
     f ~resolve:resolve_safe ~reject
