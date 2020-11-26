@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## 0.3.0
 
 -   Fix `Promise.Array.find_map` and `Promise.List.find_map` raising
     `Assert_failure` (#1)
