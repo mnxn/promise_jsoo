@@ -90,10 +90,10 @@ module Array = struct
         return None
       else
         let open Syntax in
-        let+ res = f arr.(i) in
+        let* res = f arr.(i) in
         match res with
-        | None   -> loop (succ i)
-        | Some x -> return x
+        | None        -> loop (succ i)
+        | Some _ as x -> return x
     in
     loop 0
 
@@ -110,10 +110,10 @@ module List = struct
     | []      -> return None
     | x :: xs -> (
       let open Syntax in
-      let+ res = f x in
+      let* res = f x in
       match res with
-      | None   -> find_map f xs
-      | Some x -> return x )
+      | None        -> find_map f xs
+      | Some _ as x -> return x )
 
   let filter_map (f : 'a -> 'b option t) (xs : 'a list) : 'b list t =
     let open Syntax in
