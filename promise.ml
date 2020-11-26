@@ -4,7 +4,7 @@ type +'a t = private < > Js.t
 
 type error = Js_of_ocaml.Js.Unsafe.any
 
-let js_value (promise : 'a t) : < > Js.t = (promise : 'a t :> < > Js.t)
+let js_value (type a) (promise : a t) : < > Js.t = (promise :> < > Js.t)
 
 let promise_constr = Js.Unsafe.global##._Promise
 
@@ -14,7 +14,8 @@ let wrap (value : 'a) : 'a = indirect_promise_constr##wrap value
 
 let unwrap (value : 'a) : 'b = indirect_promise_constr##unwrap value
 
-let make (f : resolve:('a -> unit) -> reject:('e -> unit) -> unit) : 'a t =
+let make (type a) (f : resolve:(a -> unit) -> reject:('e -> unit) -> unit) : a t
+    =
   let f_safe resolve reject =
     let resolve_safe value = resolve (wrap value) in
     f ~resolve:resolve_safe ~reject
@@ -27,11 +28,11 @@ let resolve (value : 'a) : 'a t = promise_constr##resolve (wrap value)
 
 let reject (reason : 'e) : 'a t = promise_constr##reject reason
 
-let catch ~(rejected : error -> 'a t) (promise : 'a t) : 'a t =
+let catch (type a) ~(rejected : error -> a t) (promise : a t) : a t =
   (Js.Unsafe.coerce @@ js_value promise)##catch (Js.wrap_callback rejected)
 
-let then_ ~(fulfilled : 'a -> 'b t) ?(rejected : (error -> 'b t) option)
-    (promise : 'a t) : 'b t =
+let then_ (type a b) ~(fulfilled : a -> b t) ?(rejected : (error -> b t) option)
+    (promise : a t) : b t =
   let fulfilled_safe value = fulfilled (unwrap value) in
   match rejected with
   | None          ->
@@ -42,21 +43,21 @@ let then_ ~(fulfilled : 'a -> 'b t) ?(rejected : (error -> 'b t) option)
       (Js.wrap_callback fulfilled_safe)
       (Js.wrap_callback rejected)
 
-let finally ~(f : unit -> unit) (promise : 'a t) : 'a t =
+let finally (type a) ~(f : unit -> unit) (promise : a t) : a t =
   (Js.Unsafe.coerce @@ js_value promise)##finally (Js.wrap_callback f)
 
-let all (promises : 'a t array) : 'a array t =
+let all (type a) (promises : a t array) : a array t =
   promise_constr##all (Js.array promises)
   |> then_ ~fulfilled:(fun value ->
          resolve (Array.map unwrap (Js.to_array value)))
 
-let all2 ((p1 : 'a t), (p2 : 'b t)) : ('a * 'b) t =
+let all2 (type a b) ((p1 : a t), (p2 : b t)) : (a * b) t =
   promise_constr##all (Js.array [| js_value p1; js_value p2 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js.to_array value in
          resolve (unwrap arr.(0), unwrap arr.(1)))
 
-let all3 ((p1 : 'a t), (p2 : 'b t), (p3 : 'c t)) : ('a * 'b * 'c) t =
+let all3 (type a b c) ((p1 : a t), (p2 : b t), (p3 : c t)) : (a * b * c) t =
   promise_constr##all (Js.array [| js_value p1; js_value p2; js_value p3 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js.to_array value in
