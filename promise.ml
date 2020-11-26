@@ -84,14 +84,18 @@ end
 
 module Array = struct
   let find_map (f : 'a -> 'b option t) (arr : 'a array) : 'b option t =
-    let arr = all (Array.map f arr) in
-    let find arr =
-      match List.find_opt Option.is_some (Array.to_list arr) with
-      | None               -> None
-      | Some (Some _ as x) -> x
-      | Some None          -> assert false
+    let len = Array.length arr in
+    let rec loop i =
+      if i = len then
+        return None
+      else
+        let open Syntax in
+        let+ res = f arr.(i) in
+        match res with
+        | None   -> loop (succ i)
+        | Some x -> return x
     in
-    map find arr
+    loop 0
 
   let filter_map (f : 'a -> 'b option t) (arr : 'a array) : 'b array t =
     let open Syntax in
@@ -101,15 +105,15 @@ module Array = struct
 end
 
 module List = struct
-  let find_map (f : 'a -> 'b option t) (xs : 'a list) : 'b list t =
-    let arr = all_list (List.map f xs) in
-    let find xs =
-      match List.find_opt Option.is_some xs with
-      | None               -> None
-      | Some (Some _ as x) -> x
-      | Some None          -> assert false
-    in
-    map find arr
+  let rec find_map (f : 'a -> 'b option t) (xs : 'a list) : 'b list t =
+    match xs with
+    | []      -> return None
+    | x :: xs -> (
+      let open Syntax in
+      let+ res = f x in
+      match res with
+      | None   -> find_map f xs
+      | Some x -> return x )
 
   let filter_map (f : 'a -> 'b option t) (xs : 'a list) : 'b list t =
     let open Syntax in
