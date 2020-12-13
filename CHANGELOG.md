@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## 0.3.1
 
 -   Reduce the size of .js binaries produced by using this library by not
     linking the ppx toolchain. (#3)
