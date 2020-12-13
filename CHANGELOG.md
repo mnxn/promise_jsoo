@@ -1,5 +1,10 @@
 # Change Log
 
+## Unreleased
+
+-   Reduce the size of .js binaries produced by using this library by not
+    linking the ppx toolchain. (#3)
+
 ## 0.3.0
 
 -   Fix `Promise.Array.find_map` and `Promise.List.find_map` raising
