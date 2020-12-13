@@ -3,7 +3,7 @@
  (name promise)
  (js_of_ocaml
   (javascript_files indirect_promise.js))
- (libraries js_of_ocaml js_of_ocaml-ppx gen_js_api)
+ (libraries js_of_ocaml gen_js_api)
  (preprocess
   (pps js_of_ocaml-ppx))
  (modes byte))
