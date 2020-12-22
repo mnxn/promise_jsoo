@@ -167,6 +167,12 @@ module List : sig
   val filter_map : ('a -> 'b option t) -> 'a list -> 'b list t
   (** [filter_map f l] applies [f] to every element of [l],
       filters out the [None] elements and resolves the list of the arguments of the [Some] elements. *)
+
+  val map : ('a -> 'b t) -> 'a list -> 'b list t
+  (** [map f l] applies [f] to every element of [l]. *)
+
+  val all : 'a t list -> 'a list t
+  (** [all l] transforms a list of promises into a promise of a list. *)
 end
 
 (** {1 Compatibility with gen_js_api} *)

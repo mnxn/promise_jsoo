@@ -126,6 +126,21 @@ module List = struct
     let open Syntax in
     let+ xs = all_list (List.map f xs) in
     List.filter_map (fun x -> x) xs
+
+  let map (type a b) (f : a -> b t) (xs : a list) : b list t =
+    let open Syntax in
+    let+ xs = all_list (List.map f xs) in
+    List.map (fun x -> x) xs
+
+  let all xs =
+    let open Syntax in
+    let rec aux acc = function
+      | []         -> return (List.rev acc)
+      | el :: rest ->
+        let* el = el in
+        aux (el :: acc) rest
+    in
+    aux [] xs
 end
 
 module Option = struct
