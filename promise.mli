@@ -2,7 +2,7 @@ type +'a promise
 
 type +'a t = 'a promise Js_of_ocaml.Js.t
 (** The Promise object represents the eventual completion (or failure) of an asynchronous
-	operation, and its resulting value. *)
+    operation, and its resulting value. *)
 
 type error = private Js_of_ocaml.Js.Unsafe.any
 (** Type for errors returned by [reject] *)
@@ -15,30 +15,30 @@ val make : (resolve:('a -> unit) -> reject:('e -> unit) -> unit) -> 'a t
 
 val catch : rejected:(error -> 'a t) -> 'a t -> 'a t
 (** Appends a rejection handler callback to the promise, and returns a new promise resolving to
-	the return value of the callback if it is called, or to its original fulfillment value if the promise is
+    the return value of the callback if it is called, or to its original fulfillment value if the promise is
     instead fulfilled. *)
 
 val then_ : fulfilled:('a -> 'b t) -> ?rejected:(error -> 'b t) -> 'a t -> 'b t
 (** Appends fulfillment and rejection handlers to the promise, and returns a new promise
-	resolving to the return value of the called handler, or to its original settled value if the
-	promise was not handled (i.e. if the relevant handler [fulfilled] or [rejected] is not
-	a function). *)
+    resolving to the return value of the called handler, or to its original settled value if the
+    promise was not handled (i.e. if the relevant handler [fulfilled] or [rejected] is not
+    a function). *)
 
 val finally : f:(unit -> unit) -> 'a t -> 'a t
 (** Appends a handler to the promise, and returns a new promise that is resolved when the
-	original promise is resolved. The handler is called when the promise is settled, whether
-	fulfilled or rejected. *)
+    original promise is resolved. The handler is called when the promise is settled, whether
+    fulfilled or rejected. *)
 
 (** {1 Static Methods} *)
 
 val all : 'a t array -> 'a array t
 (** Wait for all promises to be resolved, or for any to be rejected.
 
-	If the returned promise resolves, it is resolved with an aggregating array of the values from
-	the resolved promises ,in the same order as defined in the iterable of multiple promises.
+    If the returned promise resolves, it is resolved with an aggregating array of the values from
+    the resolved promises ,in the same order as defined in the iterable of multiple promises.
 
-	If it rejects, it is rejected with the reason from the first promise in the iterable that was
-	rejected. *)
+    If it rejects, it is rejected with the reason from the first promise in the iterable that was
+    rejected. *)
 
 val all2 : 'a t * 'b t -> ('a * 'b) t
 (** Specialization of {!all} for a tuple of 2 promises *)
@@ -52,10 +52,10 @@ val all_list : 'a t list -> 'a list t
 val race : 'a t array -> 'a t
 (** Wait until any of the promises is resolved or rejected.
 
-	If the returned promise resolves, it is resolved with the value of the first promise in the
-	iterable that resolved.
+    If the returned promise resolves, it is resolved with the value of the first promise in the
+    iterable that resolved.
 
-	If it rejects, it is rejected with the reason from the first promise that was rejected. *)
+    If it rejects, it is rejected with the reason from the first promise that was rejected. *)
 
 val race_list : 'a t list -> 'a t
 (** Specialization of {!race} for a list of promises *)
@@ -65,11 +65,11 @@ val reject : 'e -> 'a t
 
 val resolve : 'a -> 'a t
 (** Returns a new [Promise] object that is resolved with the given value. If the value is a
-	thenable (i.e. has a [then] method), the returned promise will "follow" that thenable, adopting
-	its eventual state; otherwise the returned promise will be fulfilled with the value.
+    thenable (i.e. has a [then] method), the returned promise will "follow" that thenable, adopting
+    its eventual state; otherwise the returned promise will be fulfilled with the value.
 
-	Generally, if you don't know if a value is a promise or not, [Promise.resolve value] it
-	instead and work with the return value as a promise. *)
+    Generally, if you don't know if a value is a promise or not, [Promise.resolve value] it
+    instead and work with the return value as a promise. *)
 
 (** {1 Supplemental API} *)
 
