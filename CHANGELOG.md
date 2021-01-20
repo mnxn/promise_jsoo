@@ -1,5 +1,9 @@
 # Change Log
 
+## Unreleased
+
+-   Use `promise Js.t` type for compatibility with Js_of_ocaml bindings
+
 ## 0.3.1
 
 -   Reduce the size of .js binaries produced by using this library by not

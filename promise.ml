@@ -1,10 +1,10 @@
 open Js_of_ocaml
 
-type +'a t = private < > Js.t
+type +'a promise
+
+type +'a t = 'a promise Js.t
 
 type error = Js_of_ocaml.Js.Unsafe.any
-
-let js_value (type a) (promise : a t) : < > Js.t = (promise :> < > Js.t)
 
 let promise_constr = Js.Unsafe.global##._Promise
 
@@ -29,22 +29,21 @@ let resolve (value : 'a) : 'a t = promise_constr##resolve (wrap value)
 let reject (reason : 'e) : 'a t = promise_constr##reject reason
 
 let catch (type a) ~(rejected : error -> a t) (promise : a t) : a t =
-  (Js.Unsafe.coerce @@ js_value promise)##catch (Js.wrap_callback rejected)
+  (Js.Unsafe.coerce promise)##catch (Js.wrap_callback rejected)
 
 let then_ (type a b) ~(fulfilled : a -> b t) ?(rejected : (error -> b t) option)
     (promise : a t) : b t =
   let fulfilled_safe value = fulfilled (unwrap value) in
   match rejected with
   | None          ->
-    (Js.Unsafe.coerce @@ js_value promise)##then_
-      (Js.wrap_callback fulfilled_safe)
+    (Js.Unsafe.coerce promise)##then_ (Js.wrap_callback fulfilled_safe)
   | Some rejected ->
-    (Js.Unsafe.coerce @@ js_value promise)##then_
+    (Js.Unsafe.coerce promise)##then_
       (Js.wrap_callback fulfilled_safe)
       (Js.wrap_callback rejected)
 
 let finally (type a) ~(f : unit -> unit) (promise : a t) : a t =
-  (Js.Unsafe.coerce @@ js_value promise)##finally (Js.wrap_callback f)
+  (Js.Unsafe.coerce promise)##finally (Js.wrap_callback f)
 
 let all (type a) (promises : a t array) : a array t =
   promise_constr##all (Js.array promises)
@@ -52,13 +51,15 @@ let all (type a) (promises : a t array) : a array t =
          resolve (Array.map unwrap (Js.to_array value)))
 
 let all2 (type a b) ((p1 : a t), (p2 : b t)) : (a * b) t =
-  promise_constr##all (Js.array [| js_value p1; js_value p2 |])
+  promise_constr##all (Js.array [| Js.Unsafe.coerce p1; Js.Unsafe.coerce p2 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js.to_array value in
          resolve (unwrap arr.(0), unwrap arr.(1)))
 
 let all3 (type a b c) ((p1 : a t), (p2 : b t), (p3 : c t)) : (a * b * c) t =
-  promise_constr##all (Js.array [| js_value p1; js_value p2; js_value p3 |])
+  promise_constr##all
+    (Js.array
+       [| Js.Unsafe.coerce p1; Js.Unsafe.coerce p2; Js.Unsafe.coerce p3 |])
   |> then_ ~fulfilled:(fun value ->
          let arr = Js.to_array value in
          resolve (unwrap arr.(0), unwrap arr.(1), unwrap arr.(2)))
