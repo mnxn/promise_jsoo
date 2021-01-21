@@ -30,7 +30,7 @@
 
 (package
  (name promise_jsoo_lwt)
- (synopsis "Js_of_ocaml bindings to JS Promises as Lwt Promises")
+ (synopsis "Conversion functions between JS Promises and Lwt Promises")
  (depends
   (ocaml
    (>= 4.08))
