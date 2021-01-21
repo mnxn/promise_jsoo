@@ -27,3 +27,16 @@
   (webtest :with-test)
   (webtest-js :with-test)
   (conf-npm :with-test)))
+
+(package
+ (name promise_jsoo_lwt)
+ (synopsis "Js_of_ocaml bindings to JS Promises as Lwt Promises")
+ (depends
+  (ocaml
+   (>= 4.08))
+  promise_jsoo
+  lwt
+  gen_js_api
+  (webtest :with-test)
+  (webtest-js :with-test)
+  (conf-npm :with-test)))

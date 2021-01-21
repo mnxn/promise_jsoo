@@ -1,0 +1,5 @@
+(library
+ (public_name promise_jsoo_lwt)
+ (name promise_lwt)
+ (libraries promise_jsoo lwt gen_js_api)
+ (modes byte))
