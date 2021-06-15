@@ -3,7 +3,11 @@
  (name promise)
  (js_of_ocaml
   (javascript_files indirect_promise.js))
- (libraries js_of_ocaml gen_js_api)
- (preprocess
-  (pps js_of_ocaml-ppx))
+ (libraries ojs)
  (modes byte))
+
+(rule
+ (targets internal.ml)
+ (deps internal.mli)
+ (action
+  (run %{bin:gen_js_api} %{deps})))

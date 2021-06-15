@@ -1,3 +1,5 @@
+joo_global_object.Promise = Promise;
+
 joo_global_object.IndirectPromise = function (promise) {
 	this.underlying = promise;
 };

@@ -1,75 +1,47 @@
-open Js_of_ocaml
+module P = Internal.Promise
+module IP = Internal.IndirectPromise
 
-type +'a promise
+type +'a t = 'a P.t
 
-type +'a t = 'a promise Js.t
+type error
 
-type error = Js_of_ocaml.Js.Unsafe.any
-
-let promise_constr = Js.Unsafe.global##._Promise
-
-let indirect_promise_constr = Js.Unsafe.global##._IndirectPromise
-
-let wrap (value : 'a) : 'a = indirect_promise_constr##wrap value
-
-let unwrap (value : 'a) : 'b = indirect_promise_constr##unwrap value
-
-let make (type a e) (f : resolve:(a -> unit) -> reject:(e -> unit) -> unit) :
-    a t =
+let make (f : resolve:('a -> unit) -> reject:('e -> unit) -> unit) : 'a t =
   let f_safe resolve reject =
-    let resolve_safe value = resolve (wrap value) in
+    let resolve_safe value = resolve (IP.wrap value) in
     f ~resolve:resolve_safe ~reject
   in
-  Js.Unsafe.new_obj
-    promise_constr
-    [| Js.Unsafe.inject @@ Js.wrap_callback f_safe |]
+  P.new_ f_safe
 
-let resolve (value : 'a) : 'a t = promise_constr##resolve (wrap value)
+let resolve (value : 'a) : 'a t = P.resolve (IP.wrap value)
 
-let reject (reason : 'e) : 'a t = promise_constr##reject reason
+let reject (reason : 'e) : 'a t = P.reject reason
 
-let catch (type a) ~(rejected : error -> a t) (promise : a t) : a t =
-  (Js.Unsafe.coerce promise)##catch (Js.wrap_callback rejected)
+let catch ~rejected promise = P.catch promise rejected
 
-let then_ (type a b) ~(fulfilled : a -> b t) ?(rejected : (error -> b t) option)
-    (promise : a t) : b t =
-  let fulfilled_safe value = fulfilled (unwrap value) in
-  match rejected with
-  | None          ->
-    (Js.Unsafe.coerce promise)##then_ (Js.wrap_callback fulfilled_safe)
-  | Some rejected ->
-    (Js.Unsafe.coerce promise)##then_
-      (Js.wrap_callback fulfilled_safe)
-      (Js.wrap_callback rejected)
+let then_ ~fulfilled ?rejected promise =
+  let fulfilled_safe value = fulfilled (IP.unwrap value) in
+  P.then_ promise ~fulfilled:fulfilled_safe ?rejected ()
 
-let finally (type a) ~(f : unit -> unit) (promise : a t) : a t =
-  (Js.Unsafe.coerce promise)##finally (Js.wrap_callback f)
+let finally ~f promise = P.finally promise f
 
-let all (type a) (promises : a t array) : a array t =
-  promise_constr##all (Js.array promises)
-  |> then_ ~fulfilled:(fun value ->
-         resolve (Array.map unwrap (Js.to_array value)))
+let all promises =
+  P.all promises
+  |> then_ ~fulfilled:(fun arr -> resolve (Array.map IP.unwrap arr))
 
-let all2 (type a b) ((p1 : a t), (p2 : b t)) : (a * b) t =
-  promise_constr##all (Js.array [| Js.Unsafe.coerce p1; Js.Unsafe.coerce p2 |])
-  |> then_ ~fulfilled:(fun value ->
-         let arr = Js.to_array value in
-         resolve (unwrap arr.(0), unwrap arr.(1)))
+let all2 promises =
+  P.all2 promises
+  |> then_ ~fulfilled:(fun (v1, v2) -> resolve (IP.unwrap v1, IP.unwrap v2))
 
-let all3 (type a b c) ((p1 : a t), (p2 : b t), (p3 : c t)) : (a * b * c) t =
-  promise_constr##all
-    (Js.array
-       [| Js.Unsafe.coerce p1; Js.Unsafe.coerce p2; Js.Unsafe.coerce p3 |])
-  |> then_ ~fulfilled:(fun value ->
-         let arr = Js.to_array value in
-         resolve (unwrap arr.(0), unwrap arr.(1), unwrap arr.(2)))
+let all3 promises =
+  P.all3 promises
+  |> then_ ~fulfilled:(fun (v1, v2, v3) ->
+         resolve (IP.unwrap v1, IP.unwrap v2, IP.unwrap v3))
 
-let all_list (promises : 'a t list) : 'a list t =
+let all_list promises =
   all (Array.of_list promises)
   |> then_ ~fulfilled:(fun value -> resolve (Array.to_list value))
 
-let race (promises : 'a t array) : 'a t =
-  promise_constr##race (Js.array promises)
+let race = P.race
 
 let race_list (promises : 'a t list) : 'a t = race (Array.of_list promises)
 
@@ -90,7 +62,7 @@ module Syntax = struct
 end
 
 module Array = struct
-  let find_map (type a b) (f : a -> b option t) (arr : a array) : b option t =
+  let find_map (f : 'a -> 'b option t) (arr : 'a array) : 'b option t =
     let len = Array.length arr in
     let rec loop i =
       if i = len then
@@ -104,7 +76,7 @@ module Array = struct
     in
     loop 0
 
-  let filter_map (type a b) (f : a -> b option t) (arr : a array) : b array t =
+  let filter_map (f : 'a -> 'b option t) (arr : 'a array) : 'b array t =
     let open Syntax in
     let+ arr = all (Array.map f arr) in
     let filter_map = List.filter_map (fun x -> x) in
@@ -112,18 +84,16 @@ module Array = struct
 end
 
 module List = struct
-  let rec find_map : 'a 'b. ('a -> 'b option t) -> 'a list -> 'b option t =
-   fun f xs ->
-    match xs with
+  let rec find_map (f : 'a -> 'b option t) = function
     | []      -> return None
     | x :: xs -> (
       let open Syntax in
       let* res = f x in
       match res with
       | None        -> find_map f xs
-      | Some _ as x -> return x )
+      | Some _ as x -> return x)
 
-  let filter_map (type a b) (f : a -> b option t) (xs : a list) : b list t =
+  let filter_map (f : 'a -> 'b option t) (xs : 'a list) : 'b list t =
     let open Syntax in
     let+ xs = all_list (List.map f xs) in
     List.filter_map (fun x -> x) xs
@@ -192,17 +162,9 @@ module Result = struct
   end
 end
 
-let t_to_js (to_js : 'a -> Ojs.t) (promise : 'a t) : Ojs.t =
-  Obj.magic (map to_js promise)
+let t_to_js = P.t_to_js
 
-let t_of_js (of_js : Ojs.t -> 'a) (promise : Ojs.t) : 'a t =
-  map of_js (Obj.magic promise : Ojs.t t)
-
-type void = unit t
-
-let void_to_js = t_to_js (fun () -> Ojs.variable "undefined")
-
-let void_of_js = t_of_js (fun (_ : Ojs.t) -> ())
+let t_of_js = P.t_of_js
 
 let error_to_js : error -> Ojs.t = Obj.magic
 

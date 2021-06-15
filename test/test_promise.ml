@@ -1,32 +1,39 @@
-open Js_of_ocaml
 open Webtest.Suite
+
+open
+  [%js:
+  val setTimeout : (unit -> unit) -> int -> unit [@@js.global]
+
+  val eval : string -> Ojs.t [@@js.global]
+
+  val finally_method : Ojs.t option [@@js.global "Promise.prototype.finally"]]
 
 let pass finish () = finish Async.noop
 
 let fail finish () = finish (fun () -> assert_true false)
 
-let timeout f =
-  let (_ : Dom_html.timeout_id_safe) = Dom_html.setTimeout f 1000. in
-  ()
+let timeout f = setTimeout f 1000
 
 let timeout_promise finish =
   Promise.make (fun ~resolve:_ ~reject:_ -> timeout (fail finish))
 
+let valid promise = Option.is_some @@ [%js.to: 'a option] promise
+
 module CoreFunctions = struct
   let test_make () =
     let promise = Promise.make (fun ~resolve:_ ~reject:_ -> ()) in
-    assert_true Js.Optdef.(test (return promise));
-    assert_true Js.Opt.(test (return promise))
+    let js = [%js.of: 'a Promise.t] promise in
+    assert_true (valid js)
 
   let test_resolve () =
     let promise = Promise.resolve () in
-    assert_true Js.Optdef.(test (return promise));
-    assert_true Js.Opt.(test (return promise))
+    let js = [%js.of: unit Promise.t] promise in
+    assert_true (valid js)
 
   let test_reject () =
-    let promise = Promise.resolve () in
-    assert_true Js.Optdef.(test (return promise));
-    assert_true Js.Opt.(test (return promise))
+    let promise = Promise.reject () in
+    let js = [%js.of: 'a Promise.t] promise in
+    assert_true (valid js)
 
   let suite =
     "CoreFunctions"
@@ -100,13 +107,12 @@ module InstanceMethods = struct
     timeout (fail finish)
 
   let finally_tests =
-    let finally_method = Js.Unsafe.global##._Promise##.prototype##.finally in
-    if Js.Optdef.test finally_method then
+    match finally_method with
+    | None   -> []
+    | Some _ ->
       [ "test_finally_resolved" >:~ test_finally_resolved
       ; "test_finally_rejected" >:~ test_finally_rejected
       ]
-    else
-      []
 
   let suite =
     "InstanceMethods"
@@ -746,7 +752,7 @@ module LwtConversion = struct
 
   let test_of_promise_throw finish =
     let js_promise =
-      Promise.make (fun ~resolve:_ ~reject:_ -> Js.Unsafe.eval_string "throw 3")
+      Promise.make (fun ~resolve:_ ~reject:_ -> ignore @@ eval "throw 3")
     in
     let lwt_promise = Promise_lwt.of_promise js_promise in
     let fulfilled _ = fail finish () in

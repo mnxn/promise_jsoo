@@ -1,10 +1,8 @@
-type +'a promise
-
-type +'a t = 'a promise Js_of_ocaml.Js.t
+type +'a t
 (** The Promise object represents the eventual completion (or failure) of an asynchronous
     operation, and its resulting value. *)
 
-type error = private Js_of_ocaml.Js.Unsafe.any
+type error
 (** Type for errors returned by [reject] *)
 
 val make : (resolve:('a -> unit) -> reject:('e -> unit) -> unit) -> 'a t
@@ -176,12 +174,6 @@ end
 val t_to_js : ('a -> Ojs.t) -> 'a t -> Ojs.t
 
 val t_of_js : (Ojs.t -> 'a) -> Ojs.t -> 'a t
-
-type void = unit t
-
-val void_to_js : void -> Ojs.t
-
-val void_of_js : Ojs.t -> void
 
 val error_to_js : error -> Ojs.t
 

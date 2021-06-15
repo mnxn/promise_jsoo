@@ -23,9 +23,3 @@ val to_promise : 'a t -> 'a Promise.t
 val t_to_js : ('a -> Ojs.t) -> 'a t -> Ojs.t
 
 val t_of_js : (Ojs.t -> 'a) -> Ojs.t -> 'a t
-
-type void = unit t
-
-val void_to_js : void -> Ojs.t
-
-val void_of_js : Ojs.t -> void

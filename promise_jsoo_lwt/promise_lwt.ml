@@ -28,9 +28,3 @@ let t_to_js (to_js : 'a -> Ojs.t) (lwt_promise : 'a t) : Ojs.t =
 
 let t_of_js (of_js : Ojs.t -> 'a) (js_promise : Ojs.t) : 'a t =
   of_promise (Promise.t_of_js of_js js_promise)
-
-type void = unit t
-
-let void_to_js lwt_promise = Promise.void_to_js (to_promise lwt_promise)
-
-let void_of_js js_promise = of_promise (Promise.void_of_js js_promise)
