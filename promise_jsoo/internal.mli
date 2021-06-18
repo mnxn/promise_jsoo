@@ -1,7 +1,7 @@
-module Promise : sig
+module Promise (T : Promise_intf.P) : sig
   [@@@js.stop]
 
-  type +'a t
+  type +'a t = 'a T.t
 
   val t_of_js : (Ojs.t -> 'a) -> Ojs.t -> 'a t
 
@@ -10,11 +10,15 @@ module Promise : sig
   [@@@js.start]
 
   [@@@js.implem
-  type +'a t = Ojs.t
+  type +'a t = 'a T.t
 
-  let t_to_js to_js p = Ojs.call p "then" [| [%js.of: 'a -> Ojs.t] to_js |]
+  let t_to_js to_js (p : 'a t) : Ojs.t =
+    let js = T.t_to_js Obj.magic p in
+    Ojs.call js "then" [| [%js.of: 'a -> Ojs.t] to_js |]
 
-  let t_of_js of_js p = Ojs.call p "then" [| [%js.of: Ojs.t -> 'a] of_js |]]
+  let t_of_js of_js (js : Ojs.t) : 'a t =
+    let js = Ojs.call js "then" [| [%js.of: Ojs.t -> 'a] of_js |] in
+    T.t_of_js Obj.magic js]
 
   val new_ : (('a -> unit) -> ('e -> unit) -> unit) -> 'a t [@@js.create]
 
