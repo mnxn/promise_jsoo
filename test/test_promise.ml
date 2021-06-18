@@ -32,7 +32,7 @@ module Tests (P : Promise.S) = struct
       assert_true (valid js)
 
     let test_reject () =
-      let promise = P.reject () in
+      let promise = P.reject @@ [%js.of: unit] () in
       let js = [%js.of: 'a P.t] promise in
       assert_true (valid js)
 
@@ -55,10 +55,10 @@ module Tests (P : Promise.S) = struct
       timeout (fail finish)
 
     let test_then_rejected finish =
-      let promise = P.reject 2 in
+      let promise = P.reject @@ [%js.of: int] 2 in
       let fulfilled = P.resolve in
       let rejected (reason : P.error) =
-        let reason : int = Obj.magic reason in
+        let reason = [%js.to: int] reason in
         finish (fun () -> assert_equal reason 2);
         P.resolve ()
       in
@@ -66,10 +66,10 @@ module Tests (P : Promise.S) = struct
       timeout (fail finish)
 
     let test_catch finish =
-      let promise = P.reject 3 in
+      let promise = P.reject @@ [%js.of: int] 3 in
       let rejected (reason : P.error) =
-        let result : int = Obj.magic reason in
-        finish (fun () -> assert_equal result 3);
+        let reason = [%js.to: int] reason in
+        finish (fun () -> assert_equal reason 3);
         P.resolve ()
       in
       let (_ : unit P.t) = P.catch promise ~rejected in
@@ -81,7 +81,7 @@ module Tests (P : Promise.S) = struct
       timeout (fail finish)
 
     let test_finally_rejected finish =
-      let promise = P.reject () in
+      let promise = P.reject @@ [%js.of: unit] () in
       let rejected (_ : P.error) = P.return () in
       let (_ : unit P.t) =
         P.finally promise ~f:(pass finish) |> P.catch ~rejected
@@ -98,9 +98,11 @@ module Tests (P : Promise.S) = struct
       timeout (fail finish)
 
     let test_make_reject finish =
-      let promise = P.make (fun ~resolve:_ ~reject -> reject 5) in
+      let promise =
+        P.make (fun ~resolve:_ ~reject -> reject @@ [%js.of: int] 5)
+      in
       let rejected (reason : P.error) =
-        let reason : int = Obj.magic reason in
+        let reason = [%js.to: int] reason in
         finish (fun () -> assert_equal reason 5);
         P.resolve ()
       in
@@ -387,10 +389,13 @@ module Tests (P : Promise.S) = struct
         timeout (fail finish)
 
       let test_from_catch_rejected finish =
-        let promise = P.reject "error" in
+        let promise = P.reject @@ [%js.of: string] "error" in
         let fulfilled (value : ('a, P.error) Result.t) =
-          let value = Obj.magic value in
-          finish (fun () -> assert_equal value (Result.Error "error"));
+          let expected = function
+            | Ok _         -> false
+            | Error reason -> [%js.to: string] reason = "error"
+          in
+          finish (fun () -> assert_true (expected value));
           P.return ()
         in
         let result = P.Result.from_catch promise in
@@ -725,12 +730,12 @@ module LwtConversion = struct
     timeout (fail finish)
 
   let test_of_promise_rejected finish =
-    let js_promise = Promise.reject 2 in
+    let js_promise = Promise.reject @@ [%js.of: int] 2 in
     let lwt_promise = Promise_lwt.of_promise js_promise in
     let fulfilled _ = fail finish () in
     let rejected = function
       | Promise_lwt.Promise_error reason ->
-        let reason : int = Obj.magic reason in
+        let reason = [%js.to: int] reason in
         finish (fun () -> assert_equal reason 2)
       | _ -> fail finish ()
     in
@@ -745,7 +750,7 @@ module LwtConversion = struct
     let fulfilled _ = fail finish () in
     let rejected = function
       | Promise_lwt.Promise_error reason ->
-        let reason : int = Obj.magic reason in
+        let reason = [%js.to: int] reason in
         finish (fun () -> assert_equal reason 3)
       | _ -> fail finish ()
     in
@@ -785,7 +790,7 @@ module LwtConversion = struct
     timeout (fail finish)
 
   let test_to_promise_rejected_error finish =
-    let js_promise_1 = Promise.reject 3 in
+    let js_promise_1 = Promise.reject @@ [%js.of: int] 3 in
     let lwt_promise = Promise_lwt.of_promise js_promise_1 in
     let js_promise_2 = Promise_lwt.to_promise lwt_promise in
     let fulfilled _ =
@@ -793,7 +798,7 @@ module LwtConversion = struct
       Promise.return ()
     in
     let rejected (reason : Promise.error) =
-      let reason : int = Obj.magic reason in
+      let reason = [%js.to: int] reason in
       finish (fun () -> assert_equal reason 3);
       Promise.return ()
     in

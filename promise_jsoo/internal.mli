@@ -20,16 +20,16 @@ module Promise (T : Promise_intf.P) : sig
     let js = Ojs.call js "then" [| [%js.of: Ojs.t -> 'a] of_js |] in
     T.t_of_js Obj.magic js]
 
-  val new_ : (('a -> unit) -> ('e -> unit) -> unit) -> 'a t [@@js.create]
+  val new_ : (('a -> unit) -> (Ojs.t -> unit) -> unit) -> 'a t [@@js.create]
 
   val resolve : 'a -> 'a t [@@js.global]
 
-  val reject : 'e -> 'a t [@@js.global]
+  val reject : Ojs.t -> 'a t [@@js.global]
 
-  val catch : 'a t -> ('e -> 'a t) -> 'a t [@@js.call]
+  val catch : 'a t -> (Ojs.t -> 'a t) -> 'a t [@@js.call]
 
   val then_ :
-    'a t -> fulfilled:('a -> 'b t) -> ?rejected:('error -> 'b t) -> unit -> 'b t
+    'a t -> fulfilled:('a -> 'b t) -> ?rejected:(Ojs.t -> 'b t) -> unit -> 'b t
     [@@js.call]
 
   val finally : 'a t -> (unit -> unit) -> 'a t [@@js.call]

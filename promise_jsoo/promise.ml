@@ -10,13 +10,9 @@ module Make (T : P) : S with type 'a t = 'a T.t = struct
 
   let t_to_js = P.t_to_js
 
-  type error
+  type error = Ojs.t [@@js]
 
-  let error_to_js : error -> Ojs.t = Obj.magic
-
-  let error_of_js : Ojs.t -> error = Obj.magic
-
-  let make (f : resolve:('a -> unit) -> reject:('e -> unit) -> unit) : 'a t =
+  let make (f : resolve:('a -> unit) -> reject:(error -> unit) -> unit) : 'a t =
     let f_safe resolve reject =
       let resolve_safe value = resolve (IP.wrap value) in
       f ~resolve:resolve_safe ~reject
@@ -25,7 +21,7 @@ module Make (T : P) : S with type 'a t = 'a T.t = struct
 
   let resolve (value : 'a) : 'a t = P.resolve (IP.wrap value)
 
-  let reject (reason : 'e) : 'a t = P.reject reason
+  let reject (reason : error) : 'a t = P.reject reason
 
   let catch ~rejected promise = P.catch promise rejected
 

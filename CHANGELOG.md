@@ -7,6 +7,7 @@
     JS promises and Lwt promises
 -   Change internal representation to `Ojs.t` and make `Promise.t` abstract.
 -   Add a `Make` functor to create modules with a custom type representation.
+-   Give the `error` type a public `Ojs.t` type representation.
 
 ## 0.3.1
 

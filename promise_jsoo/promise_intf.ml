@@ -7,14 +7,14 @@ module type S = sig
 
   val t_of_js : (Ojs.t -> 'a) -> Ojs.t -> 'a t
 
-  type error
+  type error = Ojs.t
   (** Type for errors returned by [reject] *)
 
   val error_to_js : error -> Ojs.t
 
   val error_of_js : Ojs.t -> error
 
-  val make : (resolve:('a -> unit) -> reject:('e -> unit) -> unit) -> 'a t
+  val make : (resolve:('a -> unit) -> reject:(error -> unit) -> unit) -> 'a t
   (** Creates a new Promise object. The constructor is primarily used to wrap functions that do
     not already support promises. *)
 
@@ -68,7 +68,7 @@ module type S = sig
   val race_list : 'a t list -> 'a t
   (** Specialization of {!race} for a list of promises *)
 
-  val reject : 'e -> 'a t
+  val reject : error -> 'a t
   (** Returns a new [Promise] object that is rejected with the given reason. *)
 
   val resolve : 'a -> 'a t
