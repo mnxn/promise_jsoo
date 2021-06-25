@@ -6,6 +6,7 @@
 -   Add `promise_jsoo_lwt` library and `Promise_lwt` module to convert between
     JS promises and Lwt promises
 -   Change internal representation to `Ojs.t` and make `Promise.t` abstract.
+-   Remove `Promise.void` type (can now be expressed as `unit Promise.t`).
 -   Add a `Make` functor to create modules with a custom type representation.
 -   Give the `error` type a public `Ojs.t` type representation.
 
