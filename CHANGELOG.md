@@ -1,3 +1,7 @@
+## v0.4.3
+
+- No longer rely on `joo_global_object` (#7)
+
 ## v0.4.2
 
 - Separate tests by library and remove `lwt` dependency from `promise_jsoo`
